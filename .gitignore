@@ -1,0 +1,36 @@
+# Ambiente virtual
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+
+# Arquivos de configuração de ambiente
+.env
+
+# Bancos de dados locais e grandes arquivos de embeddings
+*.sqlite3
+.chroma/
+*.faiss
+*.pkl
+*.bin
+
+# Logs
+*.log
+
+# Editor/IDE específicos
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Streamlit
+.streamlit/

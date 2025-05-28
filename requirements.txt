@@ -1,0 +1,8 @@
+langchain
+pypdf
+unstructured # Para DocLing ler PDFs
+chromadb # Ou faiss-cpu se preferir FAISS
+sentence-transformers # Para embeddings open-source
+streamlit
+openai # Se usar OpenAI
+python-dotenv # Para carregar chaves de API do .env

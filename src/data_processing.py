@@ -2,12 +2,11 @@ import os
 import shutil
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import OpenAIEmbeddings, HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import OpenAIEmbeddings 
+from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 
 import src.config as config
-
 
 def get_documents_from_source():
     """
@@ -55,14 +54,14 @@ def split_documents_into_chunks(documents: list[Document]):
 
 def get_embeddings_model():
     """
-    Retorna o modelo de embeddings a ser usado (OpenAI ou HuggingFace).
+    Retorna o modelo de embeddings da OpenAI.
+    Requer que OPENAI_API_KEY esteja configurada.
     """
-    if config.OPENAI_API_KEY: # Acessar via config.OPENAI_API_KEY
+    if config.OPENAI_API_KEY:
         print("Usando OpenAIEmbeddings para embeddings...")
         return OpenAIEmbeddings(openai_api_key=config.OPENAI_API_KEY)
     else:
-        print("OPENAI_API_KEY não configurada para embeddings. Usando HuggingFaceEmbeddings (modelo all-MiniLM-L6-v2)...")
-        return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+        raise ValueError("OPENAI_API_KEY não configurada. É necessária para OpenAIEmbeddings.")
 
 def process_and_store_documents():
     """

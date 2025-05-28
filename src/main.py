@@ -233,6 +233,22 @@ def clear_chat_history():
     st.session_state.conversation_started = False
     st.rerun()
 
+@st.cache_resource
+def setup_vector_db():
+    if not os.path.exists(VECTOR_DB_PATH):
+        st.info("Primeira vez carregando a base de conhecimento. Isso pode levar alguns minutos...")
+        try:
+            process_and_store_documents()
+            st.success("Base de conhecimento carregada com sucesso!")
+        except Exception as e:
+            st.error(f"Erro ao carregar a base de conhecimento: {e}. Verifique seus documentos e chaves de API.")
+            st.stop() # Parar a execução se o DB não puder ser populado
+    else:
+        st.info("Base de conhecimento já carregada.")
+
+# Chame a função de setup ao iniciar o app
+setup_vector_db()
+
 # --- Conteúdo Principal da Aplicação ---
 colored_header(
     label=APP_TITLE,

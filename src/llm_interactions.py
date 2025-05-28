@@ -1,7 +1,8 @@
 import os
 from langchain_community.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
-from langchain_community.embeddings import OpenAIEmbeddings, HuggingFaceEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 from langchain.schema.runnable import RunnablePassthrough, RunnableLambda
 from operator import itemgetter 
@@ -35,7 +36,8 @@ def get_embeddings_model():
         return OpenAIEmbeddings(openai_api_key=config.OPENAI_API_KEY)
     else:
         print("OPENAI_API_KEY não configurada para embeddings. Usando HuggingFaceEmbeddings (modelo all-MiniLM-L6-v2)...")
-        return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+        return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2") 
 
 
 def get_retriever():

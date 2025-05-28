@@ -11,3 +11,4 @@ streamlit-lottie>=0.0.5 # Animações Lottie
 requests>=2.31.0 # Para carregar arquivos Lottie e fazer requisições HTTP
 openai>=1.5.0 # Se usar OpenAI
 python-dotenv>=1.0.0 # Para carregar chaves de API do .env
+pysqlite3-binary

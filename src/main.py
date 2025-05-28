@@ -1,9 +1,11 @@
+# assistente_programacao_ia/src/main.py
+
 import os
 import sys
 import time
 import requests
 
-# Adiciona a pasta raiz do projeto ao sys.path para importações locais
+# Configuração de caminhos
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, os.pardir))
 sys.path.append(project_root)
@@ -12,22 +14,23 @@ sys.path.append(project_root)
 import streamlit as st
 from streamlit_extras.colored_header import colored_header
 from streamlit_extras.add_vertical_space import add_vertical_space
-from streamlit_lottie import st_lottie # Para animações Lottie
+from streamlit_lottie import st_lottie
 
 from src.llm_interactions import ask_question
-from src.config import APP_TITLE, APP_DESCRIPTION, APP_VERSION, VECTOR_DB_PATH # Importa VECTOR_DB_PATH
+from src.config import APP_TITLE, APP_DESCRIPTION, APP_VERSION, VECTOR_DB_PATH # Importe VECTOR_DB_PATH
+from src.data_processing import process_and_store_documents # <<< IMPORTANTE: Importar esta função
 
 # --- Configuração da Página Streamlit ---
 st.set_page_config(
     page_title=APP_TITLE,
     page_icon="🤖",
-    layout="wide", # Ajusta o layout da página
-    initial_sidebar_state="expanded", # Expande a sidebar por padrão
-    # theme="dark" # Define o tema escuro (requer Streamlit >= 1.10)
+    layout="wide",
+    initial_sidebar_state="expanded",
+    # theme="dark"
 )
 
 # --- Funções Auxiliares ---
-@st.cache_data # Cacheia o resultado da função para otimizar
+@st.cache_data
 def load_lottieurl(url: str):
     """Carrega dados de animações Lottie de uma URL."""
     r = requests.get(url)
@@ -40,39 +43,34 @@ def apply_custom_css():
     st.markdown("""
     <style>
     /* Estilos globais e de fundo */
-    .stApp {
-        background-color: #1E1E1E !important; /* Fundo principal escuro */
-        color: #E0E0E0 !important; /* Cor do texto geral */
+    body {
+        background-color: #1E1E1E !important;
+        color: #E0E0E0 !important;
     }
+    .stApp {
+        background-color: #1E1E1E !important;
+        color: #E0E0E0 !important;
+    }
+    
     .main .block-container {
         padding-top: 2rem;
         padding-bottom: 2rem;
     }
 
-    /* Estilos para as mensagens do chat */
-    /* Garante que o contêiner do chat e as mensagens internas sejam escuras */
-    .stChatMessage {
-        background-color: transparent !important; /* Remove fundo padrão do stChatMessage */
-    }
+    /* Estilos para as mensagens do chat (balões) */
     .stChatMessage [data-testid="stChatMessageContent"] {
         border-radius: 10px;
         padding: 10px;
         margin: 5px 0;
         box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-        color: #E0E0E0 !important; /* Cor do texto dentro do balão */
+        color: #E0E0E0 !important;
     }
-
-    /* Mensagem do usuário */
     .stChatMessage.st-emotion-cache-user-message [data-testid="stChatMessageContent"] {
-        background-color: #2C3E50 !important; /* Fundo do balão do usuário (azul escuro) */
+        background-color: #2C3E50 !important; 
     }
-    
-    /* Mensagem do assistente */
     .stChatMessage.st-emotion-cache-assistant-message [data-testid="stChatMessageContent"] {
-        background-color: #1F3A3D !important; /* Fundo do balão do assistente (verde escuro) */
+        background-color: #1F3A3D !important;
     }
-
-    /* Garante que todos os parágrafos e textos sejam claros */
     p, li, div {
         color: #E0E0E0 !important;
     }
@@ -95,7 +93,6 @@ def apply_custom_css():
         color: #B0BEC5 !important;
         font-weight: 500;
     }
-    /* Cor do texto de entrada */
     .stTextInput [data-testid="stTextInput"] div div input {
         background-color: #2D2D2D !important;
         color: #E0E0E0 !important;
@@ -111,10 +108,8 @@ def apply_custom_css():
         font-size: 1.2rem;
         font-weight: 600;
         margin-bottom: 1rem;
-        color: #90CAF9 !important; /* Azul claro para título */
+        color: #90CAF9 !important;
     }
-
-    /* Botão limpar histórico na sidebar */
     .clear-button {
         color: #FF5252;
         cursor: pointer;
@@ -130,12 +125,10 @@ def apply_custom_css():
         margin-bottom: 10px;
         border: 1px solid #333333;
     }
-    /* Estilo para o conteúdo de texto dentro do expander */
     div[data-testid="stExpander"] div[data-testid="stMarkdownContainer"] p,
     div[data-testid="stExpander"] div[data-testid="stMarkdownContainer"] li {
         color: #E0E0E0 !important;
     }
-    /* Estilo para o título do expander */
     div[data-testid="stExpander"] .st-emotion-cache-16idsys p {
         color: #90CAF9 !important;
     }
@@ -187,7 +180,6 @@ def apply_custom_css():
     """, unsafe_allow_html=True)
 
 # --- Inicialização de Variáveis de Estado ---
-# Usamos session_state para manter o estado entre as reruns do Streamlit
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "conversation_started" not in st.session_state:
@@ -196,7 +188,7 @@ if "conversation_started" not in st.session_state:
 # --- Aplicar CSS Personalizado ---
 apply_custom_css()
 
-# --- Conteúdo da Sidebar ---
+# --- Configuração da Sidebar ---
 with st.sidebar:
     st.image("https://img.icons8.com/fluency/96/artificial-intelligence.png", width=80)
     st.markdown("<div class='sidebar-title'>Assistente FastAPI</div>", unsafe_allow_html=True)
@@ -233,6 +225,9 @@ def clear_chat_history():
     st.session_state.conversation_started = False
     st.rerun()
 
+# --- CONDIÇÃO PARA POPULAR O BANCO DE DADOS NO DEPLOY ---
+# Esta função será executada apenas uma vez na primeira vez que o aplicativo for implantado
+# ou quando o cache for limpo e o aplicativo for reiniciado no Streamlit Cloud.
 @st.cache_resource
 def setup_vector_db():
     if not os.path.exists(VECTOR_DB_PATH):
@@ -255,14 +250,6 @@ colored_header(
     description=APP_DESCRIPTION,
     color_name="green-70"
 )
-
-# Alerta de configuração do banco de dados vetorial
-if not os.path.exists(VECTOR_DB_PATH): # Verifica se a pasta do DB não existe
-    st.warning(
-        "⚠️ Base de conhecimento não encontrada! Execute o comando abaixo no terminal:\n\n"
-        "```bash\npython scripts/populate_vector_db.py\n```", 
-        icon="⚠️"
-    )
 
 # Guia do usuário
 with st.expander("📖 Como usar este assistente", expanded=not st.session_state.get("conversation_started", False)):
@@ -290,13 +277,13 @@ for message in st.session_state.messages:
 
 # Entrada do usuário e lógica de resposta
 if user_question := st.chat_input("Pergunte algo sobre FastAPI..."):
-    st.session_state.conversation_started = True # Marca que a conversa começou
-    st.session_state.messages.append({"role": "user", "content": user_question}) # Adiciona pergunta ao histórico
+    st.session_state.conversation_started = True
+    st.session_state.messages.append({"role": "user", "content": user_question})
     
-    with st.chat_message("user"): # Exibe a pergunta do usuário no chat
+    with st.chat_message("user"):
         st.markdown(user_question)
     
-    with st.chat_message("assistant"): # Gera e exibe a resposta do assistente
+    with st.chat_message("assistant"):
         with st.spinner("Gerando resposta..."):
             try:
                 response_content = ask_question(user_question, idioma_desejado=idioma_selecionado)

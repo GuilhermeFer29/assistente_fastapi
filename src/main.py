@@ -1,49 +1,303 @@
 import os
 import sys
+import time
+import requests
 
+# Adiciona a pasta raiz do projeto ao sys.path para importações locais
 current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.abspath(os.path.join(current_dir, os.pardir)) # Sobe um nível para chegar na pasta raiz do projeto
+project_root = os.path.abspath(os.path.join(current_dir, os.pardir))
 sys.path.append(project_root)
 
+# Importações dos módulos locais e de bibliotecas
 import streamlit as st
+from streamlit_extras.colored_header import colored_header
+from streamlit_extras.add_vertical_space import add_vertical_space
+from streamlit_lottie import st_lottie # Para animações Lottie
+
 from src.llm_interactions import ask_question
-from src.config import APP_TITLE, APP_DESCRIPTION
-import os
+from src.config import APP_TITLE, APP_DESCRIPTION, APP_VERSION, VECTOR_DB_PATH # Importa VECTOR_DB_PATH
 
-st.set_page_config(page_title=APP_TITLE, layout="centered")
+# --- Configuração da Página Streamlit ---
+st.set_page_config(
+    page_title=APP_TITLE,
+    page_icon="🤖",
+    layout="wide", # Ajusta o layout da página
+    initial_sidebar_state="expanded", # Expande a sidebar por padrão
+    # theme="dark" # Define o tema escuro (requer Streamlit >= 1.10)
+)
 
-st.title(APP_TITLE)
-st.markdown(APP_DESCRIPTION)
+# --- Funções Auxiliares ---
+@st.cache_data # Cacheia o resultado da função para otimizar
+def load_lottieurl(url: str):
+    """Carrega dados de animações Lottie de uma URL."""
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
 
-# Botão para instruir o usuário a popular o DB
-st.warning("Se esta é a primeira vez rodando ou se sua base de conhecimento mudou, execute 'python scripts/populate_vector_db.py' no terminal.")
+def apply_custom_css():
+    """Aplica estilos CSS personalizados para o modo escuro e layout do chat."""
+    st.markdown("""
+    <style>
+    /* Estilos globais e de fundo */
+    .stApp {
+        background-color: #1E1E1E !important; /* Fundo principal escuro */
+        color: #E0E0E0 !important; /* Cor do texto geral */
+    }
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
 
-# Histórico de conversas (opcional, para persistência no Streamlit)
+    /* Estilos para as mensagens do chat */
+    /* Garante que o contêiner do chat e as mensagens internas sejam escuras */
+    .stChatMessage {
+        background-color: transparent !important; /* Remove fundo padrão do stChatMessage */
+    }
+    .stChatMessage [data-testid="stChatMessageContent"] {
+        border-radius: 10px;
+        padding: 10px;
+        margin: 5px 0;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        color: #E0E0E0 !important; /* Cor do texto dentro do balão */
+    }
+
+    /* Mensagem do usuário */
+    .stChatMessage.st-emotion-cache-user-message [data-testid="stChatMessageContent"] {
+        background-color: #2C3E50 !important; /* Fundo do balão do usuário (azul escuro) */
+    }
+    
+    /* Mensagem do assistente */
+    .stChatMessage.st-emotion-cache-assistant-message [data-testid="stChatMessageContent"] {
+        background-color: #1F3A3D !important; /* Fundo do balão do assistente (verde escuro) */
+    }
+
+    /* Garante que todos os parágrafos e textos sejam claros */
+    p, li, div {
+        color: #E0E0E0 !important;
+    }
+
+    /* Estilo para botões */
+    .stButton>button {
+        background-color: #388E3C;
+        color: white;
+        border-radius: 8px;
+        border: none;
+        transition: all 0.3s;
+    }
+    .stButton>button:hover {
+        background-color: #43A047;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+    }
+
+    /* Estilo para labels de selectbox, text input e expander */
+    .stSelectbox label, .stTextInput label, .stExpander label {
+        color: #B0BEC5 !important;
+        font-weight: 500;
+    }
+    /* Cor do texto de entrada */
+    .stTextInput [data-testid="stTextInput"] div div input {
+        background-color: #2D2D2D !important;
+        color: #E0E0E0 !important;
+    }
+
+    /* Sidebar */
+    div[data-testid="stSidebar"] {
+        background-color: #121212 !important;
+        border-right: 1px solid #333333;
+        color: #E0E0E0 !important;
+    }
+    .sidebar-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #90CAF9 !important; /* Azul claro para título */
+    }
+
+    /* Botão limpar histórico na sidebar */
+    .clear-button {
+        color: #FF5252;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: underline;
+        margin-top: 1rem;
+    }
+
+    /* Expander "Como usar este assistente" */
+    div[data-testid="stExpander"] {
+        background-color: #2D2D2D !important;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        border: 1px solid #333333;
+    }
+    /* Estilo para o conteúdo de texto dentro do expander */
+    div[data-testid="stExpander"] div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="stExpander"] div[data-testid="stMarkdownContainer"] li {
+        color: #E0E0E0 !important;
+    }
+    /* Estilo para o título do expander */
+    div[data-testid="stExpander"] .st-emotion-cache-16idsys p {
+        color: #90CAF9 !important;
+    }
+
+    /* Estilo para st.info (bloco "Sobre") */
+    div[data-testid="stInfo"] {
+        background-color: #2C3E50 !important;
+        color: #E0E0E0 !important;
+        border-left: 3px solid #90CAF9 !important;
+    }
+    div[data-testid="stInfo"] p {
+        color: #E0E0E0 !important;
+    }
+    
+    /* Estilo para st.warning (alerta de DB) */
+    div[data-testid="stWarning"] {
+        background-color: #4A4A20 !important;
+        color: #FFD700 !important;
+        border-left: 3px solid #FFD700 !important;
+    }
+    div[data-testid="stWarning"] p {
+        color: #FFD700 !important;
+    }
+    div[data-testid="stWarning"] code {
+        background-color: #5A5A30 !important;
+        color: #FFFFF0 !important;
+    }
+
+    /* Ajustes para o rodapé */
+    .footer-text {
+        color: #888 !important;
+    }
+
+    /* Ajustes para o input de chat */
+    div[data-testid="stChatInput"] > div {
+        background-color: #2D2D2D !important;
+        border-radius: 10px !important;
+        padding: 5px !important;
+    }
+    div[data-testid="stChatInput"] input {
+        background-color: #2D2D2D !important;
+        color: #E0E0E0 !important;
+    }
+    div[data-testid="stChatInput"] button {
+        background-color: #388E3C !important;
+        color: white !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- Inicialização de Variáveis de Estado ---
+# Usamos session_state para manter o estado entre as reruns do Streamlit
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "conversation_started" not in st.session_state:
+    st.session_state.conversation_started = False
 
-# Exibe o histórico de mensagens
+# --- Aplicar CSS Personalizado ---
+apply_custom_css()
+
+# --- Conteúdo da Sidebar ---
+with st.sidebar:
+    st.image("https://img.icons8.com/fluency/96/artificial-intelligence.png", width=80)
+    st.markdown("<div class='sidebar-title'>Assistente FastAPI</div>", unsafe_allow_html=True)
+    
+    st.caption(f"Versão: {APP_VERSION}")
+    add_vertical_space(1)
+    
+    idioma_selecionado = st.selectbox(
+        "Idioma da resposta",
+        ("Português do Brasil", "English"),
+        index=0 # Português como padrão
+    )
+    
+    lottie_coding = load_lottieurl("https://assets5.lottiefiles.com/packages/lf20_fcfjwiyb.json")
+    if lottie_coding:
+        st_lottie(lottie_coding, height=200)
+    
+    st.markdown("### Sobre")
+    st.info(
+        "Este assistente usa tecnologia RAG para responder suas dúvidas sobre FastAPI com base em documentação oficial."
+    )
+    
+    if st.button("Limpar Histórico", use_container_width=True):
+        clear_chat_history()
+    
+    st.markdown("---")
+    st.caption("Desenvolvido por Guilherme Fernandes do Bem")
+    st.caption("[LinkedIn](https://linkedin.com/in/guilherme-fernandes-do-bem)")
+
+# --- Funções de Chat ---
+def clear_chat_history():
+    """Limpa o histórico de mensagens e reinicia a conversa."""
+    st.session_state.messages = []
+    st.session_state.conversation_started = False
+    st.rerun()
+
+# --- Conteúdo Principal da Aplicação ---
+colored_header(
+    label=APP_TITLE,
+    description=APP_DESCRIPTION,
+    color_name="green-70"
+)
+
+# Alerta de configuração do banco de dados vetorial
+if not os.path.exists(VECTOR_DB_PATH): # Verifica se a pasta do DB não existe
+    st.warning(
+        "⚠️ Base de conhecimento não encontrada! Execute o comando abaixo no terminal:\n\n"
+        "```bash\npython scripts/populate_vector_db.py\n```", 
+        icon="⚠️"
+    )
+
+# Guia do usuário
+with st.expander("📖 Como usar este assistente", expanded=not st.session_state.get("conversation_started", False)):
+    st.markdown("""
+    ### 👋 Bem-vindo ao Assistente FastAPI!
+    
+    Este assistente foi projetado para ajudar você com suas dúvidas sobre FastAPI. Siga estas dicas para obter melhores resultados:
+    
+    1. **Perguntas específicas**: Quanto mais específica for sua pergunta, melhor será a resposta.
+    2. **Contexto**: Inclua contexto relevante na sua pergunta para obter respostas mais precisas.
+    3. **Código**: Você pode incluir trechos de código nas suas perguntas.
+    4. **Idioma**: Selecione o idioma da resposta na barra lateral.
+    5. **Histórico**: Suas conversas ficam salvas durante a sessão atual.
+    
+    **Exemplos de perguntas:**
+    - "Como criar um endpoint POST com validação de dados no FastAPI?"
+    - "Como configurar autenticação JWT no FastAPI?"
+    - "Qual a diferença entre Path e Query parameters no FastAPI?"
+    """)
+
+# Exibe o histórico de mensagens no chat
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Opção de idioma
-idioma_selecionado = st.selectbox(
-    "Escolha o idioma da resposta:",
-    ("Português do Brasil", "English"),
-    index=0 # Português como padrão
-)
-
-# Entrada do usuário
-if user_question := st.chat_input("Pergunte algo sobre programação..."):
-    # Adiciona a pergunta do usuário ao histórico
-    st.session_state.messages.append({"role": "user", "content": user_question})
-    with st.chat_message("user"):
+# Entrada do usuário e lógica de resposta
+if user_question := st.chat_input("Pergunte algo sobre FastAPI..."):
+    st.session_state.conversation_started = True # Marca que a conversa começou
+    st.session_state.messages.append({"role": "user", "content": user_question}) # Adiciona pergunta ao histórico
+    
+    with st.chat_message("user"): # Exibe a pergunta do usuário no chat
         st.markdown(user_question)
+    
+    with st.chat_message("assistant"): # Gera e exibe a resposta do assistente
+        with st.spinner("Gerando resposta..."):
+            try:
+                response_content = ask_question(user_question, idioma_desejado=idioma_selecionado)
+                st.markdown(response_content)
+                st.session_state.messages.append({"role": "assistant", "content": response_content})
+            except Exception as e:
+                error_message = f"Erro ao gerar a resposta: {str(e)}\n\nPor favor, tente novamente ou verifique as configurações da API/DB."
+                st.error(error_message)
+                st.session_state.messages.append({"role": "assistant", "content": error_message})
 
-    # Gera a resposta do assistente
-    with st.chat_message("assistant"):
-        with st.spinner("Pensando na resposta..."):
-            response_content = ask_question(user_question, idioma_desejado=idioma_selecionado)
-            st.markdown(response_content)
-        st.session_state.messages.append({"role": "assistant", "content": response_content})
+# --- Rodapé ---
+st.markdown("---")
+footer_cols = st.columns([1, 2, 1])
+with footer_cols[1]:
+    st.markdown(
+        "<div style='text-align: center; color: #888;' class='footer-text'>"
+        "Powered by LangChain + DeepSeek + Streamlit"
+        "</div>",
+        unsafe_allow_html=True
+    )

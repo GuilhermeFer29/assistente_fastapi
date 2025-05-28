@@ -1,8 +1,13 @@
-langchain
-pypdf
-unstructured # Para DocLing ler PDFs
-chromadb # Ou faiss-cpu se preferir FAISS
-sentence-transformers # Para embeddings open-source
-streamlit
-openai # Se usar OpenAI
-python-dotenv # Para carregar chaves de API do .env
+langchain>=0.1.0
+langchain-community>=0.0.16
+langchain-core>=0.1.5
+pypdf>=3.15.1
+unstructured>=0.10.30 # Para DocLing ler PDFs
+chromadb>=0.4.18 # Ou faiss-cpu se preferir FAISS
+sentence-transformers>=2.2.2 # Para embeddings open-source
+streamlit>=1.28.0
+streamlit-extras>=0.3.4 # Componentes adicionais para Streamlit
+streamlit-lottie>=0.0.5 # Animações Lottie
+requests>=2.31.0 # Para carregar arquivos Lottie e fazer requisições HTTP
+openai>=1.5.0 # Se usar OpenAI
+python-dotenv>=1.0.0 # Para carregar chaves de API do .env

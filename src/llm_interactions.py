@@ -46,16 +46,19 @@ def get_retriever():
     """
     embeddings_model = get_embeddings_model()
 
+    # Verifica se o arquivo FAISS existe
     if not os.path.exists(config.VECTOR_DB_PATH):
         print(f"Erro: Banco de dados vetorial FAISS não encontrado em {config.VECTOR_DB_PATH}. Por favor, execute populate_vector_db.py primeiro.")
         return None
 
     print(f"Carregando banco de dados vetorial FAISS de: {config.VECTOR_DB_PATH}")
     
+    # Carrega o FAISS
     db = FAISS.load_local(
         folder_path=os.path.dirname(config.VECTOR_DB_PATH),
         embeddings=embeddings_model,
-        index_name=os.path.basename(config.VECTOR_DB_PATH).split('.')[0]
+        index_name=os.path.basename(config.VECTOR_DB_PATH).split('.')[0],
+        allow_dangerous_deserialization=True 
     )
     return db.as_retriever(search_kwargs={"k": config.TOP_K_RETRIEVER})
 

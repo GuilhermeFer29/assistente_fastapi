@@ -1,26 +1,27 @@
 
-# Assistente de Programação IA: Seu Guia Rápido para Dúvidas de Programação com RAG
+# Assistente FastAPI: Seu Guia Inteligente para Dúvidas sobre FastAPI com RAG
 
-Este projeto é um assistente inteligente de programação que utiliza a tecnologia de Geração Aumentada por Recuperação (RAG) e Modelos de Linguagem Grandes (LLMs) para responder a perguntas técnicas com base em uma base de conhecimento personalizada e local. O objetivo é fornecer respostas rápidas e contextuais sobre tópicos de programação, tirando dúvidas de documentações e tutoriais.
+Este projeto é um assistente inteligente especializado em FastAPI que utiliza a tecnologia de Geração Aumentada por Recuperação (RAG) e Modelos de Linguagem Grandes (LLMs) para responder a perguntas técnicas com base em uma base de conhecimento personalizada e local. O objetivo é fornecer respostas rápidas e contextuais sobre o framework FastAPI, tirando dúvidas de documentações e tutoriais.
 
 ## 💡 Problema Resolvido
 
-Programadores frequentemente gastam tempo valioso buscando informações em documentações extensas e espalhadas, ou em fóruns. Este assistente centraliza o conhecimento, permitindo respostas instantâneas e contextualizadas a partir de uma base de dados interna e confiável, otimizando o fluxo de trabalho.
+Programadores frequentemente gastam tempo valioso buscando informações específicas em documentações extensas do FastAPI ou em fóruns. Este assistente centraliza o conhecimento sobre FastAPI, permitindo respostas instantâneas e contextualizadas a partir de uma base de dados interna e confiável, otimizando o fluxo de trabalho dos desenvolvedores.
 
 ## ✨ Funcionalidades Principais
 
-- **Q&A em Linguagem Natural**: Faça perguntas sobre a utilização da biblioteca FastApi em português ou inglês e receba respostas claras.
-- **Base de Conhecimento Personalizada**: Alimentado por seus próprios documentos (PDFs, TXTs), garantindo respostas relevantes para seu contexto de estudo ou trabalho.
-- **Geração Aumentada por Recuperação (RAG)**: O sistema recupera informações relevantes da sua base de conhecimento antes de gerar a resposta com o LLM, garantindo precisão e reduzindo "alucinações".
+- **Q&A em Linguagem Natural**: Faça perguntas sobre a utilização do framework FastAPI em português ou inglês e receba respostas claras.
+- **Base de Conhecimento Especializada**: Alimentado pela documentação oficial do FastAPI e recursos selecionados, garantindo respostas relevantes e precisas.
+- **Geração Aumentada por Recuperação (RAG)**: O sistema recupera informações relevantes da base de conhecimento antes de gerar a resposta com o LLM, garantindo precisão e reduzindo "alucinações".
 - **Suporte a Documentos Bilíngues**: Processa documentos em português e inglês.
 - **Resposta no Idioma Desejado**: O usuário pode selecionar o idioma da resposta diretamente na interface.
-- **Interface Intuitiva**: Um aplicativo web simples e amigável construído com Streamlit.
+- **Interface Profissional**: Interface web moderna e amigável construída com Streamlit, com exibição apropriada do histórico de chat.
 - **Uso de LLM Avançado**: Integração com o modelo DeepSeek-chat-v3-0324 via OpenRouter.
 
 ## 🛠️ Tecnologias Utilizadas
 
 - **Linguagem de Programação**: Python
 - **Frameworks/Bibliotecas**:
+  - FastAPI
   - LangChain
   - Streamlit
   - HuggingFaceEmbeddings
@@ -29,12 +30,12 @@ Programadores frequentemente gastam tempo valioso buscando informações em docu
   - OpenRouter (DeepSeek-chat-v3-0324)
   - python-dotenv
   - os, sys, shutil
-- **Conceitos**: RAG, Embeddings, LLMs, PLN, Vetores
+- **Conceitos**: RAG, Embeddings, LLMs, PLN, Vetores, API REST
 
 ## 📁 Estrutura do Projeto
 
 ```
-assistente_programacao_ia/
+assistente_fastapi/
 ├── .venv/
 ├── docs/
 ├── src/
@@ -42,6 +43,7 @@ assistente_programacao_ia/
 │   ├── main.py
 │   ├── config.py
 │   ├── data_processing.py
+│   ├── api.py
 │   └── llm_interactions.py
 ├── scripts/
 │   └── populate_vector_db.py
@@ -60,8 +62,8 @@ assistente_programacao_ia/
 ### 1. Clonar o Repositório
 
 ```bash
-git clone https://github.com/GuilhermeFer29/assistente_programacao_ia.git
-cd assistente_programacao_ia
+git clone https://github.com/GuilhermeFer29/assistente_fastapi.git
+cd assistente_fastapi
 ```
 
 ### 2. Configurar o Ambiente Virtual
@@ -116,7 +118,7 @@ streamlit run src/main.py
 
 ## 🚀 Uso do Assistente
 
-Escolha o idioma, digite sua pergunta e receba a resposta contextualizada no idioma desejado.
+Escolha o idioma, digite sua pergunta sobre FastAPI, e receba a resposta contextualizada no idioma desejado. O histórico de chat será exibido de forma clara e organizada na interface.
 
 ## 🚧 Desafios e Aprendizados
 
@@ -125,14 +127,17 @@ Escolha o idioma, digite sua pergunta e receba a resposta contextualizada no idi
 - Uso de embeddings sem custo (HuggingFace)
 - Integração com LLMs via OpenRouter
 - Controle de idioma nas respostas
+- Design de interfaces profissionais com Streamlit
+- Implementação de APIs REST com FastAPI
 
 ## 🎯 Próximos Passos
 
 - Suporte a DOCX, HTML
 - Cache de embeddings
-- Interface aprimorada (histórico, uploads)
-- Fine-tuning de LLMs
+- Expansão da base de conhecimento com mais recursos de FastAPI
+- Fine-tuning de LLMs específico para FastAPI
 - Deploy em nuvem
+- Integração com ambientes de desenvolvimento (VSCode, PyCharm)
 
 ## 👨‍💻 Autor
 

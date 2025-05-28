@@ -18,7 +18,7 @@ dist/
 
 # Bancos de dados locais e grandes arquivos de embeddings
 *.sqlite3
-.chroma/
+.chroma_db/
 *.faiss
 *.pkl
 *.bin

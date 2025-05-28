@@ -1,16 +1,7 @@
-# assistente_programacao_ia/src/main.py
-
 import os
 import sys
 import time
 import requests
-
-# Configuração de caminhos
-current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.abspath(os.path.join(current_dir, os.pardir))
-sys.path.append(project_root)
-
-# Importações dos módulos locais e de bibliotecas
 import streamlit as st
 from streamlit_extras.colored_header import colored_header
 from streamlit_extras.add_vertical_space import add_vertical_space
@@ -18,7 +9,13 @@ from streamlit_lottie import st_lottie
 
 from src.llm_interactions import ask_question
 from src.config import APP_TITLE, APP_DESCRIPTION, APP_VERSION, VECTOR_DB_PATH # Importe VECTOR_DB_PATH
-from src.data_processing import process_and_store_documents # <<< IMPORTANTE: Importar esta função
+from src.data_processing import process_and_store_documents 
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, os.pardir))
+sys.path.append(project_root)
+
+
 
 # --- Configuração da Página Streamlit ---
 st.set_page_config(

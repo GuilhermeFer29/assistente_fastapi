@@ -1,15 +1,11 @@
 import os
-# Remova as importações de langchain_community.llms e langchain.chains.RetrievalQA
-# Não usaremos mais RetrievalQA diretamente para esta cadeia específica
 from langchain_community.chat_models import ChatOpenAI
-from langchain_community.vectorstores import Chroma
-# Importações para LCEL
 from langchain.prompts import PromptTemplate
 from langchain_community.embeddings import OpenAIEmbeddings, HuggingFaceEmbeddings
 from langchain_core.documents import Document
 from langchain.schema.runnable import RunnablePassthrough, RunnableLambda
-from operator import itemgetter # Para ajudar a extrair itens de dicionários
-
+from operator import itemgetter 
+from langchain_community.vectorstores import FAISS 
 import src.config as config
 
 def get_llm():
@@ -44,16 +40,21 @@ def get_embeddings_model():
 
 def get_retriever():
     """
-    Carrega o banco de dados vetorial e configura o retriever.
+    Carrega o banco de dados vetorial (FAISS) e configura o retriever.
     """
     embeddings_model = get_embeddings_model()
 
     if not os.path.exists(config.VECTOR_DB_PATH):
-        print(f"Erro: Banco de dados vetorial não encontrado em {config.VECTOR_DB_PATH}. Por favor, execute populate_vector_db.py primeiro.")
+        print(f"Erro: Banco de dados vetorial FAISS não encontrado em {config.VECTOR_DB_PATH}. Por favor, execute populate_vector_db.py primeiro.")
         return None
 
-    print(f"Carregando banco de dados vetorial de: {config.VECTOR_DB_PATH}")
-    db = Chroma(persist_directory=config.VECTOR_DB_PATH, embedding_function=embeddings_model)
+    print(f"Carregando banco de dados vetorial FAISS de: {config.VECTOR_DB_PATH}")
+    
+    db = FAISS.load_local(
+        folder_path=os.path.dirname(config.VECTOR_DB_PATH),
+        embeddings=embeddings_model,
+        index_name=os.path.basename(config.VECTOR_DB_PATH).split('.')[0]
+    )
     return db.as_retriever(search_kwargs={"k": config.TOP_K_RETRIEVER})
 
 

@@ -11,7 +11,7 @@ OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOCS_PATH = os.path.join(BASE_DIR, "docs")
-VECTOR_DB_PATH = os.path.join(BASE_DIR, ".chroma_db")
+VECTOR_DB_PATH = os.path.join(BASE_DIR, "faiss_index.faiss")
 
 # Configuraçoes RAG
 CHUNK_SIZE = 1000

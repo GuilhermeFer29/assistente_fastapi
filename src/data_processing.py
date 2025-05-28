@@ -6,7 +6,6 @@ from langchain_community.embeddings import OpenAIEmbeddings, HuggingFaceEmbeddin
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 
-# IMPORTAÇÃO ATUALIZADA: Importe o módulo 'config' diretamente
 import src.config as config
 
 
@@ -67,32 +66,28 @@ def get_embeddings_model():
 
 def process_and_store_documents():
     """
-    Orquestra o carregamento, divisão, embedding e armazenamento dos documentos no ChromaDB.
+    Orquestra o carregamento, divisão, embedding e armazenamento dos documentos no FAISS.
     """
-    # 1. Carregar documentos
     documents = get_documents_from_source()
     if not documents:
         print("Não há documentos para processar. Saindo.")
         return
 
-    # 2. Dividir em chunks
     chunks = split_documents_into_chunks(documents)
-
-    # 3. Obter modelo de embeddings
     embeddings_model = get_embeddings_model()
 
-    # 4. Remover banco de dados vetorial existente (para recriação)
-    if os.path.exists(config.VECTOR_DB_PATH): # Usar config.VECTOR_DB_PATH
-        print(f"Removendo banco de dados vetorial existente em: {config.VECTOR_DB_PATH}") # Usar config.VECTOR_DB_PATH
-        shutil.rmtree(config.VECTOR_DB_PATH) # Usar config.VECTOR_DB_PATH
+    # FAISS 
+    if os.path.exists(config.VECTOR_DB_PATH):
+        print(f"Removendo banco de dados vetorial existente em: {config.VECTOR_DB_PATH}")
+        os.remove(config.VECTOR_DB_PATH) 
 
-    # 5. Criar e popular o banco de dados vetorial
-    print("Criando e populando o banco de dados vetorial (ChromaDB)...")
-    db = Chroma.from_documents(
-        documents=chunks,
-        embedding=embeddings_model,
-        persist_directory=config.VECTOR_DB_PATH # Usar config.VECTOR_DB_PATH
-    )
-    db.persist()
-    print(f"Banco de dados vetorial criado e populado em: {config.VECTOR_DB_PATH}") # Usar config.VECTOR_DB_PATH
+        if os.path.exists(config.VECTOR_DB_PATH.replace('.faiss', '.pkl')):
+             os.remove(config.VECTOR_DB_PATH.replace('.faiss', '.pkl'))
+
+
+    print("Criando e populando o banco de dados vetorial (FAISS)...")
+    db = FAISS.from_documents(chunks, embeddings_model)
+    db.save_local(os.path.dirname(config.VECTOR_DB_PATH), os.path.basename(config.VECTOR_DB_PATH).split('.')[0]) # Salva o arquivo FAISS
+
+    print(f"Banco de dados vetorial criado e populado em: {config.VECTOR_DB_PATH}")
     print("Processo de populamento concluído com sucesso!")
